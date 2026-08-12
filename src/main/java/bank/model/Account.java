@@ -3,32 +3,38 @@ package bank.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class Account {
-    private long accountId;
+public abstract class Account {
+    private Long accountId;
+    private Long customerId;
     private String accountNumber;
-    private String accountName;
-    private byte accountPin;
     private BigDecimal balance;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    public Account(){
-
-    }
-
-        public Account(String accountNumber, String accountName, byte accountPin, BigDecimal balance){
+    protected Account(Long accountId, Long customerId, String accountNumber, BigDecimal balance, LocalDateTime createdAt) {
+        this.accountId = accountId;
+        this.customerId = customerId;
         this.accountNumber = accountNumber;
-        this.accountName = accountName;
-        this.accountPin = accountPin;
         this.balance = balance;
+        this.createdAt = createdAt;
+    }
+    protected Account(){
+
     }
 
-    public long getAccountId() {
+    public Long getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(long accountId) {
+    public void setAccountId(Long accountId) {
         this.accountId = accountId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
     public String getAccountNumber() {
@@ -37,22 +43,6 @@ public class Account {
 
     public void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
-
-    public byte getAccountPin() {
-        return accountPin;
-    }
-
-    public void setAccountPin(byte accountPin) {
-        this.accountPin = accountPin;
     }
 
     public BigDecimal getBalance() {
@@ -71,13 +61,13 @@ public class Account {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public void deposit(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            System.out.println("Invalid deposit amount.");
+            return;
+        }
+        balance = balance.add(amount);
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-
+    public abstract void withdraw(BigDecimal amount);
 }
