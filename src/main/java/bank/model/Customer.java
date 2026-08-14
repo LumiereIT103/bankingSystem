@@ -1,14 +1,14 @@
 package bank.model;
 
 public class Customer {
-    private int customerId;
+    private long customerId;
     private String firstName;
     private String lastName;
     private String address;
     private String phoneNumber;
     private String email;
 
-    public Customer(int customerId, String firstName, String lastName, String address, String phoneNumber, String email) {
+    public Customer(long customerId, String firstName, String lastName, String address, String phoneNumber, String email) {
         this.customerId = customerId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -19,11 +19,11 @@ public class Customer {
     public Customer(){
         
     }
-    public int getCustomerId() {
+    public long getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(long customerId) {
         this.customerId = customerId;
     }
 
