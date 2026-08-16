@@ -56,7 +56,7 @@ public class CustomerDAOImpl implements CustomerDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Failed to save customer.",
+                    "Failed to createAccount customer.",
                     e
             );
         }
