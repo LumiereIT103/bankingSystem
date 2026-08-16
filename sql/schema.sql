@@ -39,23 +39,25 @@ CREATE TABLE IF NOT EXISTS accounts(
 );
 
 CREATE TABLE transactions (
-      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  transaction_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-      reference_number VARCHAR(50) NOT NULL UNIQUE,
+  reference_number VARCHAR(50) NOT NULL UNIQUE,
 
-      account_id BIGINT NOT NULL,
-      related_account_id BIGINT,
+  transfer_reference VARCHAR(50),
 
-      transaction_type VARCHAR(30) NOT NULL,
+  account_id BIGINT NOT NULL,
 
-      amount DECIMAL(15, 2) NOT NULL,
-      balance_after DECIMAL(15, 2) NOT NULL,
+  transaction_type VARCHAR(30) NOT NULL,
 
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  amount DECIMAL(15, 2) NOT NULL,
 
-      CONSTRAINT fk_transactions_account
-          FOREIGN KEY (account_id)
-              REFERENCES accounts(account_id)
-              ON DELETE RESTRICT
-              ON UPDATE CASCADE
+  balance_after DECIMAL(15, 2) NOT NULL,
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_transactions_account
+      FOREIGN KEY (account_id)
+          REFERENCES accounts(account_id)
+          ON DELETE RESTRICT
+          ON UPDATE CASCADE
 );
