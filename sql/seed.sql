@@ -1,6 +1,19 @@
 USE banking_db;
 
 -- =========================================================
+-- RESET EXISTING TEST DATA
+-- =========================================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE transactions;
+TRUNCATE TABLE accounts;
+TRUNCATE TABLE customers;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- =========================================================
 -- SEED CUSTOMERS
 -- =========================================================
 
@@ -41,6 +54,7 @@ VALUES
         'anna.garcia@example.com'
     );
 
+
 -- =========================================================
 -- SEED ACCOUNTS
 -- =========================================================
@@ -59,7 +73,7 @@ VALUES
         1,
         '1000000001',
         'SAVINGS',
-        15000.00,
+        13000.00,
         2.50,
         NULL
     ),
@@ -67,7 +81,7 @@ VALUES
         1,
         '2000000001',
         'CHECKING',
-        25000.00,
+        20000.00,
         NULL,
         5000.00
     );
@@ -86,7 +100,7 @@ VALUES
         2,
         '1000000002',
         'SAVINGS',
-        30000.00,
+        35000.00,
         2.75,
         NULL
     );
@@ -137,156 +151,17 @@ VALUES
         NULL
     );
 
+
 -- =========================================================
 -- SEED TRANSACTIONS
 -- =========================================================
 
--- Juan's Savings Account: Initial deposit
+-- Juan Savings
+-- Initial deposit: 15,000
 INSERT INTO transactions (
     reference_number,
+    transfer_reference,
     account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000001',
-        1,
-        NULL,
-        'DEPOSIT',
-        15000.00,
-        15000.00
-    );
-
--- Juan's Checking Account: Initial deposit
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000002',
-        2,
-        NULL,
-        'DEPOSIT',
-        25000.00,
-        25000.00
-    );
-
--- Maria's Savings Account: Initial deposit
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000003',
-        3,
-        NULL,
-        'DEPOSIT',
-        30000.00,
-        30000.00
-    );
-
--- Carlos's Savings Account: Initial deposit
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000004',
-        4,
-        NULL,
-        'DEPOSIT',
-        10000.00,
-        10000.00
-    );
-
--- Carlos's Checking Account: Initial deposit
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000005',
-        5,
-        NULL,
-        'DEPOSIT',
-        18000.00,
-        18000.00
-    );
-
--- Anna's Savings Account: Initial deposit
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000006',
-        6,
-        NULL,
-        'DEPOSIT',
-        45000.00,
-        45000.00
-    );
-
--- =========================================================
--- SAMPLE WITHDRAWAL
--- Juan withdraws 2,000 from Savings
--- =========================================================
-
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
-    transaction_type,
-    amount,
-    balance_after
-)
-VALUES
-    (
-        'TXN-000007',
-        1,
-        NULL,
-        'WITHDRAWAL',
-        2000.00,
-        13000.00
-    );
-
--- =========================================================
--- SAMPLE TRANSFER
--- Juan's Checking -> Maria's Savings
--- =========================================================
-
-INSERT INTO transactions (
-    reference_number,
-    account_id,
-    related_account_id,
     transaction_type,
     amount,
     balance_after
@@ -294,8 +169,8 @@ INSERT INTO transactions (
 VALUES
     (
         'TXN-000008',
+        'TRF-000001',
         2,
-        3,
         'TRANSFER_OUT',
         5000.00,
         20000.00
@@ -303,8 +178,8 @@ VALUES
 
 INSERT INTO transactions (
     reference_number,
+    transfer_reference,
     account_id,
-    related_account_id,
     transaction_type,
     amount,
     balance_after
@@ -312,8 +187,8 @@ INSERT INTO transactions (
 VALUES
     (
         'TXN-000009',
+        'TRF-000001',
         3,
-        2,
         'TRANSFER_IN',
         5000.00,
         35000.00
