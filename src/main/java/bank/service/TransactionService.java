@@ -5,6 +5,12 @@ import bank.dao.TransactionDAO;
 import bank.model.Account;
 import bank.model.Transaction;
 import bank.model.TransactionType;
+import bank.config.DBConnection;
+import java.sql.Connection;
+import java.sql.SQLException;
+import bank.exception.AccountNotFoundException;
+import bank.exception.InsufficientBalanceException;
+import bank.exception.InvalidTransactionException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -92,8 +98,7 @@ public class TransactionService {
                 account.getBalance();
 
         if (amount.compareTo(currentBalance) > 0) {
-
-            throw new IllegalArgumentException(
+            throw new InsufficientBalanceException(
                     "Insufficient balance."
             );
         }
@@ -150,7 +155,7 @@ public class TransactionService {
         validateReferenceNumber(referenceNumber);
 
         if (fromAccountNumber.equals(toAccountNumber)) {
-            throw new IllegalArgumentException(
+            throw new InvalidTransactionException(
                     "Source and destination accounts must be different."
             );
         }
@@ -162,7 +167,7 @@ public class TransactionService {
                 getAccountByNumber(toAccountNumber);
 
         if (amount.compareTo(sender.getBalance()) > 0) {
-            throw new IllegalArgumentException(
+            throw new InsufficientBalanceException(
                     "Insufficient balance."
             );
         }
@@ -173,74 +178,119 @@ public class TransactionService {
         BigDecimal receiverNewBalance =
                 receiver.getBalance().add(amount);
 
-        boolean senderUpdated =
-                accountDAO.updateBalance(
-                        sender.getAccountId(),
+        try (Connection connection =
+                     DBConnection.getConnection()) {
+
+            try {
+
+                connection.setAutoCommit(false);
+
+                boolean senderUpdated =
+                        accountDAO.updateBalance(
+                                connection,
+                                sender.getAccountId(),
+                                senderNewBalance
+                        );
+
+                if (!senderUpdated) {
+                    throw new IllegalStateException(
+                            "Failed to update sender balance."
+                    );
+                }
+
+                boolean receiverUpdated =
+                        accountDAO.updateBalance(
+                                connection,
+                                receiver.getAccountId(),
+                                receiverNewBalance
+                        );
+
+                if (!receiverUpdated) {
+                    throw new IllegalStateException(
+                            "Failed to update receiver balance."
+                    );
+                }
+
+                Transaction outgoing =
+                        new Transaction();
+
+                outgoing.setReferenceNumber(
+                        referenceNumber
+                );
+
+                outgoing.setAccountId(
+                        sender.getAccountId()
+                );
+
+                outgoing.setType(
+                        TransactionType.TRANSFER_OUT
+                );
+
+                outgoing.setAmount(amount);
+
+                outgoing.setBalanceAfter(
                         senderNewBalance
                 );
 
-        if (!senderUpdated) {
-            throw new IllegalStateException(
-                    "Failed to update sender balance."
-            );
-        }
+                Transaction incoming =
+                        new Transaction();
 
-        boolean receiverUpdated =
-                accountDAO.updateBalance(
-                        receiver.getAccountId(),
+                incoming.setReferenceNumber(
+                        referenceNumber
+                );
+
+                incoming.setAccountId(
+                        receiver.getAccountId()
+                );
+
+                incoming.setType(
+                        TransactionType.TRANSFER_IN
+                );
+
+                incoming.setAmount(amount);
+
+                incoming.setBalanceAfter(
                         receiverNewBalance
                 );
 
-        if (!receiverUpdated) {
+                transactionDAO.createTransaction(
+                        connection,
+                        outgoing
+                );
+
+                transactionDAO.createTransaction(
+                        connection,
+                        incoming
+                );
+
+                connection.commit();
+
+            } catch (Exception e) {
+
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackException) {
+                    e.addSuppressed(rollbackException);
+                }
+
+                throw e;
+
+            } finally {
+
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    // Connection is about to be closed.
+                }
+            }
+
+        } catch (SQLException e) {
+
             throw new IllegalStateException(
-                    "Failed to update receiver balance."
+                    "Database transaction failed.",
+                    e
             );
         }
-
-        Transaction outgoing =
-                new Transaction();
-
-        outgoing.setReferenceNumber(
-                referenceNumber
-        );
-
-        outgoing.setAccountId(
-                sender.getAccountId()
-        );
-
-        outgoing.setType(
-                TransactionType.TRANSFER_OUT
-        );
-
-        outgoing.setAmount(amount);
-
-        outgoing.setBalanceAfter(
-                senderNewBalance
-        );
-
-        Transaction incoming =
-                new Transaction();
-
-        incoming.setReferenceNumber(
-                referenceNumber
-        );
-
-        incoming.setAccountId(
-                receiver.getAccountId()
-        );
-
-        incoming.setType(
-                TransactionType.TRANSFER_IN
-        );
-
-        incoming.setAmount(amount);
-
-        incoming.setBalanceAfter(
-                receiverNewBalance
-        );
-
-        transactionDAO.createTransaction(outgoing);
-        transactionDAO.createTransaction(incoming);
     }
 
     public List<Transaction> getTransactionHistory(
@@ -313,7 +363,7 @@ public class TransactionService {
         return accountDAO
                 .findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new AccountNotFoundException(
                                 "Account not found: "
                                         + accountNumber
                         )
@@ -331,7 +381,7 @@ public class TransactionService {
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
+            throw new InvalidTransactionException(
                     "Amount must be greater than zero."
             );
         }
@@ -357,7 +407,7 @@ public class TransactionService {
         if (referenceNumber == null
                 || referenceNumber.isBlank()) {
 
-            throw new IllegalArgumentException(
+            throw new InvalidTransactionException(
                     "Reference number is required."
             );
         }

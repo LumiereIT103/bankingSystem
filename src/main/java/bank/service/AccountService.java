@@ -7,6 +7,9 @@ import bank.model.CheckingAccount;
 import bank.model.SavingsAccount;
 import bank.model.Customer;
 
+import bank.exception.AccountNotFoundException;
+import bank.exception.CustomerNotFoundException;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +53,8 @@ public class AccountService {
 
         if (existingAccount.isPresent()) {
             throw new IllegalArgumentException(
-                    "Account number already exists."
+                    "Account number already exists: "
+                            + account.getAccountNumber()
             );
         }
 
@@ -81,7 +85,7 @@ public class AccountService {
     }
 
     public List<Account> getAccountsByCustomerId(
-            int customerId
+            long customerId
     ) {
 
         validateId(customerId);
@@ -92,19 +96,20 @@ public class AccountService {
     public void updateAccount(Account account) {
 
         validateAccount(account);
-        validateId(account.getAccountId().intValue());
+        validateId(account.getAccountId());
 
         boolean updated =
                 accountDAO.update(account);
 
         if (!updated) {
-            throw new IllegalArgumentException(
-                    "Account not found."
+            throw new AccountNotFoundException(
+                    "Account not found: "
+                            + account.getAccountId()
             );
         }
     }
 
-    public void closeAccount(int accountId) {
+    public void closeAccount(long accountId) {
 
         validateId(accountId);
 
@@ -112,8 +117,8 @@ public class AccountService {
                 accountDAO.findById(accountId);
 
         if (account.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Account not found."
+            throw new AccountNotFoundException(
+                    "Account not found: " + accountId
             );
         }
 
@@ -131,8 +136,8 @@ public class AccountService {
                 accountDAO.deleteById(accountId);
 
         if (!deleted) {
-            throw new IllegalArgumentException(
-                    "Failed to close account."
+            throw new AccountNotFoundException(
+                    "Account not found: " + accountId
             );
         }
     }

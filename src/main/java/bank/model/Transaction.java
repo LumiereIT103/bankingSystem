@@ -12,13 +12,12 @@ public class Transaction {
     private BigDecimal amount;
     private BigDecimal balanceAfter;
     private LocalDateTime createdAt;
+    private String transferReference;
 
-
-    public Transaction(){
-
-    }
-
-    public Transaction(Long transactionId, String referenceNumber, Long accountId, Long relatedAccountId, TransactionType type, BigDecimal amount, BigDecimal balanceAfter, LocalDateTime createdAt) {
+    public Transaction(Long transactionId, String referenceNumber, Long accountId,
+                       Long relatedAccountId, TransactionType type, BigDecimal amount,
+                       BigDecimal balanceAfter, LocalDateTime createdAt,
+                       String transferReference) {
         this.transactionId = transactionId;
         this.referenceNumber = referenceNumber;
         this.accountId = accountId;
@@ -27,7 +26,24 @@ public class Transaction {
         this.amount = amount;
         this.balanceAfter = balanceAfter;
         this.createdAt = createdAt;
+        this.transferReference = transferReference;
     }
+    
+    public String getTransferReference() {
+        return transferReference;
+    }
+
+    public void setTransferReference(String transferReference) {
+        this.transferReference = transferReference;
+    }
+
+
+
+    public Transaction(){
+
+    }
+
+
 
     public Long getTransactionId() {
         return transactionId;

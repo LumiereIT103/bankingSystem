@@ -1,7 +1,7 @@
 package bank.dao.impl;
 
-import bank.dao.TransactionDAO;
 import bank.config.DBConnection;
+import bank.dao.TransactionDAO;
 import bank.model.Transaction;
 import bank.model.TransactionType;
 
@@ -19,13 +19,14 @@ public class TransactionDAOImpl implements TransactionDAO {
                 INSERT INTO transactions
                     (
                         reference_number,
+                        transfer_reference,
                         account_id,
                         transaction_type,
                         amount,
                         balance_after
                     )
                 VALUES
-                    (?, ?, ?, ?, ?)
+                    (?, ?, ?, ?, ?, ?)
                 """;
 
         try (
@@ -41,23 +42,28 @@ public class TransactionDAOImpl implements TransactionDAO {
                     transaction.getReferenceNumber()
             );
 
-            statement.setLong(
+            statement.setString(
                     2,
+                    transaction.getTransferReference()
+            );
+
+            statement.setLong(
+                    3,
                     transaction.getAccountId()
             );
 
             statement.setString(
-                    3,
+                    4,
                     transaction.getType().name()
             );
 
             statement.setBigDecimal(
-                    4,
+                    5,
                     transaction.getAmount()
             );
 
             statement.setBigDecimal(
-                    5,
+                    6,
                     transaction.getBalanceAfter()
             );
 
@@ -91,7 +97,101 @@ public class TransactionDAOImpl implements TransactionDAO {
         } catch (SQLException e) {
 
             throw new RuntimeException(
-                    "Failed to createTransaction transaction.",
+                    "Failed to create transaction.",
+                    e
+            );
+        }
+    }
+
+    @Override
+    public Transaction createTransaction(
+            Connection connection,
+            Transaction transaction
+    ) {
+
+        String sql = """
+                INSERT INTO transactions
+                    (
+                        reference_number,
+                        transfer_reference,
+                        account_id,
+                        transaction_type,
+                        amount,
+                        balance_after
+                    )
+                VALUES
+                    (?, ?, ?, ?, ?, ?)
+                """;
+
+        try (
+                PreparedStatement statement =
+                        connection.prepareStatement(
+                                sql,
+                                Statement.RETURN_GENERATED_KEYS
+                        )
+        ) {
+
+            statement.setString(
+                    1,
+                    transaction.getReferenceNumber()
+            );
+
+            statement.setString(
+                    2,
+                    transaction.getTransferReference()
+            );
+
+            statement.setLong(
+                    3,
+                    transaction.getAccountId()
+            );
+
+            statement.setString(
+                    4,
+                    transaction.getType().name()
+            );
+
+            statement.setBigDecimal(
+                    5,
+                    transaction.getAmount()
+            );
+
+            statement.setBigDecimal(
+                    6,
+                    transaction.getBalanceAfter()
+            );
+
+            int affectedRows = statement.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException(
+                        "Creating transaction failed. No rows affected."
+                );
+            }
+
+            try (ResultSet generatedKeys =
+                         statement.getGeneratedKeys()) {
+
+                if (generatedKeys.next()) {
+
+                    transaction.setTransactionId(
+                            generatedKeys.getLong(1)
+                    );
+
+                } else {
+
+                    throw new SQLException(
+                            "Creating transaction failed. No ID obtained."
+                    );
+                }
+            }
+
+            return transaction;
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Failed to create transaction.",
                     e
             );
         }
@@ -104,6 +204,7 @@ public class TransactionDAOImpl implements TransactionDAO {
                 SELECT
                     transaction_id,
                     reference_number,
+                    transfer_reference,
                     account_id,
                     transaction_type,
                     amount,
@@ -151,6 +252,7 @@ public class TransactionDAOImpl implements TransactionDAO {
                 SELECT
                     transaction_id,
                     reference_number,
+                    transfer_reference,
                     account_id,
                     transaction_type,
                     amount,
@@ -196,6 +298,7 @@ public class TransactionDAOImpl implements TransactionDAO {
                 SELECT
                     transaction_id,
                     reference_number,
+                    transfer_reference,
                     account_id,
                     transaction_type,
                     amount,
@@ -247,6 +350,7 @@ public class TransactionDAOImpl implements TransactionDAO {
                 SELECT
                     transaction_id,
                     reference_number,
+                    transfer_reference,
                     account_id,
                     transaction_type,
                     amount,
@@ -305,6 +409,7 @@ public class TransactionDAOImpl implements TransactionDAO {
                 SELECT
                     transaction_id,
                     reference_number,
+                    transfer_reference,
                     account_id,
                     transaction_type,
                     amount,
@@ -349,8 +454,9 @@ public class TransactionDAOImpl implements TransactionDAO {
         }
     }
 
-    private Transaction mapRow(ResultSet resultSet)
-            throws SQLException {
+    private Transaction mapRow(
+            ResultSet resultSet
+    ) throws SQLException {
 
         Transaction transaction = new Transaction();
 
@@ -360,6 +466,10 @@ public class TransactionDAOImpl implements TransactionDAO {
 
         transaction.setReferenceNumber(
                 resultSet.getString("reference_number")
+        );
+
+        transaction.setTransferReference(
+                resultSet.getString("transfer_reference")
         );
 
         transaction.setAccountId(

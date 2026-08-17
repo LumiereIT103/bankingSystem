@@ -1,6 +1,7 @@
 package bank.service;
 
 import bank.dao.CustomerDAO;
+import bank.exception.CustomerNotFoundException;
 import bank.model.Customer;
 
 import java.util.List;
@@ -42,8 +43,8 @@ public class CustomerService {
         boolean updated = customerDAO.update(customer);
 
         if (!updated) {
-            throw new IllegalArgumentException(
-                    "Customer not found."
+            throw new CustomerNotFoundException(
+                    "Customer not found: " + customer.getCustomerId()
             );
         }
     }
@@ -55,8 +56,8 @@ public class CustomerService {
         boolean deleted = customerDAO.deleteById(customerId);
 
         if (!deleted) {
-            throw new IllegalArgumentException(
-                    "Customer not found."
+            throw new CustomerNotFoundException(
+                    "Customer not found: " + customerId
             );
         }
     }
