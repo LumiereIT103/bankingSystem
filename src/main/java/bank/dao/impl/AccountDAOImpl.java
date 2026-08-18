@@ -375,6 +375,35 @@ public class AccountDAOImpl implements AccountDAO {
     }
 
     @Override
+    public boolean updateBalance(
+            Connection connection,
+            long accountId,
+            BigDecimal newBalance
+    ) {
+
+        String sql = """
+            UPDATE accounts
+            SET balance = ?
+            WHERE account_id = ?
+            """;
+
+        try (PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setBigDecimal(1, newBalance);
+            statement.setLong(2, accountId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Failed to update account balance.",
+                    e
+            );
+        }
+    }
+
+    @Override
     public boolean deleteById(long accountId) {
 
         String sql = """

@@ -13,15 +13,19 @@ public class Customer {
         
     }
 
-    public Customer(Long customerId, String firstName, String lastName, String address, String phoneNumber, String email) {
-        this.customerId = customerId;
+    public Customer(
+            String firstName,
+            String lastName,
+            String address,
+            String phoneNumber,
+            String email
+    ) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.email = email;
     }
-
     public Long getCustomerId() {
         return customerId;
     }

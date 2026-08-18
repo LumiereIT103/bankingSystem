@@ -1,8 +1,8 @@
 package bank.dao;
 
 import bank.model.Account;
-
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +19,16 @@ public interface AccountDAO {
 
     boolean update(Account account);
 
-    boolean updateBalance(long accountId, BigDecimal newBalance);
+    boolean updateBalance(
+            long accountId,
+            BigDecimal newBalance
+    );
+
+    boolean updateBalance(
+            Connection connection,
+            long accountId,
+            BigDecimal newBalance
+    );
 
     boolean deleteById(long accountId);
 }
